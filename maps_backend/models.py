@@ -17,9 +17,19 @@ class OsmElementMixin(object):
 
 class Polygon(OsmElementMixin, Base):
     __tablename__ = "planet_osm_polygon"
-    way = Column(Geometry("GEOMETRY", srid=3857))
+    way = Column(
+        Geometry(
+            "GEOMETRY",
+            srid=3857,
+        )
+    )
 
 
 class Point(OsmElementMixin, Base):
     __tablename__ = "planet_osm_point"
-    way = Column(Geometry("POINT", srid=3857))
+    way = Column(
+        Geometry(
+            "POINT",
+            srid=3857,
+        )
+    )
