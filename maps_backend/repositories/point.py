@@ -3,10 +3,9 @@ from sqlalchemy.orm import Session
 
 from ..models import Point
 from ..utils import SRID
-from .utils import BaseGeometryRepository
 
 
-class PointRepository(BaseGeometryRepository):
+class PointRepository:
     def list(
         cls,
         db: Session,

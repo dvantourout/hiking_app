@@ -5,6 +5,10 @@ load_dotenv()
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Query
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 
 from maps_backend import schemas
@@ -12,7 +16,12 @@ from maps_backend import schemas
 from .database import get_db
 from .repositories import PointRepository, PolygonRepository
 
+limiter = Limiter(key_func=get_remote_address, default_limits=["10/minute"])
+
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 
 @app.get("/")
