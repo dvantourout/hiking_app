@@ -1,19 +1,18 @@
 from pydantic import BaseModel, Json
 
 
+class Point(BaseModel):
+    id: int
+    name: str | None
+    object_type: str
+    tags: dict
+    geojson: Json
+
+
 class Polygon(BaseModel):
-    osm_id: int
+    id: int
     name: str | None
-    tags: dict | None
-    way: str | None
-
-
-class Geometry(BaseModel):
-    osm_id: int
-    # admin_level: str | None
-    amenity: str | None
-    # boundary: str | None
-    name: str | None
-    tags: dict | None
-    tourism: str | None
-    geojson: Json | None
+    object_type: str
+    tags: dict
+    centroid: Json
+    geojson: Json

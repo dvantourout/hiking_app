@@ -1,36 +1,24 @@
+from geoalchemy2 import functions
 from sqlalchemy.orm import Session
 
 from ..models import Polygon
 
 
 class PolygonRepository:
-    def list(
-        self,
-        db: Session,
-        filter_by_name: str | None = None,
-        boundary_in: list[str] | None = None,
-        admin_level_in: list[str] | None = None,
-    ) -> list[Polygon]:
+    def list(self, db: Session, limit: int = 100) -> list[Polygon]:
         query = db.query(
-            Polygon.osm_id,
+            Polygon.id,
             Polygon.name,
             Polygon.tags,
-            Polygon.way,
+            Polygon.object_type,
+            # TODO: create during the importation process
+            # osm2pgsql column geojson with create_only argument
+            # Then run an update query
+            functions.ST_AsGeoJSON(Polygon.centroid).label("centroid"),
+            functions.ST_AsGeoJSON(Polygon.geom).label("geojson"),
         )
 
-        if filter_by_name:
-            query = query.filter(
-                Polygon.tags["name:en"].op("%")(filter_by_name),
-            ).order_by(
-                Polygon.tags["name:en"].op("<->")(filter_by_name).asc(),
-            )
-
-        if boundary_in:
-            query = query.filter(Polygon.boundary.in_(boundary_in))
-
-        if admin_level_in:
-            query = query.filter(Polygon.admin_level.in_(admin_level_in))
-
-        query = query.limit(10)
+        query = query.order_by(Polygon.id.asc())
+        query = query.limit(limit)
 
         return query.all()

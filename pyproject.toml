@@ -9,9 +9,9 @@ readme = "README.md"
 python = "^3.12"
 fastapi = {extras = ["standard"], version = "^0.115.2"}
 sqlalchemy = "^2.0.36"
-psycopg2 = "^2.9.10"
 geoalchemy2 = "^0.15.2"
 python-dotenv = "^1.0.1"
+psycopg2-binary = "^2.9.10"
 
 
 [tool.poetry.group.dev.dependencies]

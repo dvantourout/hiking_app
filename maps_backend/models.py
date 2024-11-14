@@ -3,33 +3,39 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.postgresql import HSTORE
 
 from .database import Base
+from .utils import SRID
 
 
+# https://docs.sqlalchemy.org/en/13/orm/extensions/declarative/mixins.html
 class OsmElementMixin(object):
-    osm_id = Column(Integer, primary_key=True)
-    admin_level = Column(Integer, nullable=True)
-    amenity = Column(String, nullable=True)
-    boundary = Column(String, nullable=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String, nullable=True)
-    tags = Column(HSTORE, nullable=True)
-    tourism = Column(String, nullable=True)
+    osm_type = Column(String, nullable=False)
+    object_type = Column(String, nullable=False)
+    tags = Column(HSTORE, nullable=False)
 
 
 class Polygon(OsmElementMixin, Base):
-    __tablename__ = "planet_osm_polygon"
-    way = Column(
+    __tablename__ = "polygons"
+    centroid = Column(
+        Geometry(
+            "POINT",
+            srid=SRID.EPSG_4326,
+        )
+    )
+    geom = Column(
         Geometry(
             "GEOMETRY",
-            srid=3857,
+            srid=SRID.EPSG_4326,
         )
     )
 
 
 class Point(OsmElementMixin, Base):
-    __tablename__ = "planet_osm_point"
-    way = Column(
+    __tablename__ = "nodes"
+    geom = Column(
         Geometry(
             "POINT",
-            srid=3857,
+            srid=SRID.EPSG_4326,
         )
     )

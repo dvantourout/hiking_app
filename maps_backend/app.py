@@ -2,76 +2,64 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import Depends, FastAPI
+from typing import Annotated
+
+from fastapi import Depends, FastAPI, Query
 from sqlalchemy.orm import Session
 
-from maps_backend import repositories, schemas
+from maps_backend import schemas
 
 from .database import get_db
+from .repositories import PointRepository, PolygonRepository
 
 app = FastAPI()
 
 
-@app.get("/search", response_model=list[schemas.Polygon])
-async def filter_by_name(
-    q: str, db: Session = Depends(get_db)
-) -> list[schemas.Polygon]:
-    polygons = repositories.PolygonRepository().list(
-        db,
-        filter_by_name=q,
-        boundary_in=["administrative"],
-        admin_level_in=["2"],
-    )
-
-    return [
-        {
-            "osm_id": polygon.osm_id,
-            "name": polygon.name,
-            "tags": polygon.tags,
-            "way": None,  # str(polygon.way),
-        }
-        for polygon in polygons
-    ]
+@app.get("/")
+def root():
+    return {"hello": "world"}
 
 
-@app.get(
-    "/polygons/",
-    response_model=list[schemas.Geometry],
-)
-async def get_huts(
-    min_x: float | None = None,
-    min_y: float | None = None,
-    max_x: float | None = None,
-    max_y: float | None = None,
+@app.get("/points", response_model=list[schemas.Point])
+def get_points(
+    bbox: Annotated[list[float] | None, Query()] = None,
+    limit: int | None = 1000,
     db: Session = Depends(get_db),
 ):
-    # http://bboxfinder.com/#45.234283,5.657959,45.525111,6.059647
-    # print([min_x, min_y, max_x, max_y])
-    bbox = (
-        [min_x, min_y, max_x, max_y]
-        if min_x is not None
-        and min_y is not None
-        and max_x is not None
-        and max_y is not None
-        else None
-    )
+    print(bbox)
 
-    # ?min_x=5.657959&min_y=45.234283&max_x=6.059647&max_y=45.525111
-    geometries = repositories.GeometryRepository().list_huts(
+    points_repository = PointRepository()
+    points = points_repository.list(
         db,
+        limit=limit,
         bbox=bbox,
     )
 
     return [
         {
-            "osm_id": geometry.osm_id,
-            # "admin_level": geometry.admin_level,
-            "amenity": geometry.amenity,
-            # "boundary": geometry.boundary,
-            "name": geometry.name,
-            "tourism": geometry.tourism,
-            "tags": geometry.tags,
-            "geojson": geometry.geojson,
+            "id": point.id,
+            "name": point.name,
+            "object_type": point.object_type,
+            "tags": point.tags,
+            "geojson": point.geojson,
         }
-        for geometry in geometries
+        for point in points
+    ]
+
+
+@app.get("/polygons", response_model=list[schemas.Polygon])
+def get_polygons(db: Session = Depends(get_db)):
+    polygons_repository = PolygonRepository()
+    polygons = polygons_repository.list(db)
+
+    return [
+        {
+            "id": polygon.id,
+            "name": polygon.name,
+            "object_type": polygon.object_type,
+            "tags": polygon.tags,
+            "centroid": polygon.centroid,
+            "geojson": polygon.geojson,
+        }
+        for polygon in polygons
     ]
