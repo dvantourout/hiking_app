@@ -1,6 +1,6 @@
 services:
   web:
-    image: ghcr.io/dvantourout/map_backend:latest
+    image: ghcr.io/dvantourout/hiking_app:main
     ports:
       - "8000:8000"
     env_file: ".env"

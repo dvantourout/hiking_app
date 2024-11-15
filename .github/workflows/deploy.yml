@@ -1,0 +1,24 @@
+name: Deploy to VPS
+
+on:
+  workflow_run:
+    workflows: ["CI Build"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy using SSH
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.VPS_ADDRESS }}
+          username: ${{ secrets.VPS_USERNAME }}
+          passphrase: ${{ secrets.VPS_PASSPHRASE }}
+          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script: |
+            cd ~/public_html
+            docker compose pull
+            docker compose up -d

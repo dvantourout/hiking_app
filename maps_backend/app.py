@@ -26,7 +26,7 @@ app.add_middleware(SlowAPIMiddleware)
 
 @app.get("/")
 def root():
-    return {"hello": "world!"}
+    return {"hello": "world?"}
 
 
 @app.get("/points", response_model=list[schemas.Point])
