@@ -20,5 +20,6 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
             cd ~/public_html
+            echo "${{ secrets.ENV_FILE }}" >> .env
             docker compose pull
             docker compose up -d
